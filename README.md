@@ -6,7 +6,7 @@ idgen是一个可以生成全局唯一自增id的分布式高可用服务。
 
 - **强一致** 使用raft一致性算法，多节点自动切换master-follower，任何一个节点都可以提供服务。
 - **接口简单** redis兼容协议，使用任何一门语言的redis客户端即可使用，没有专门的客户端。
-- **高性能** 使用redis-benchmark来测试，qps可达4w/s。
+- **高性能** 使用redis-benchmark来测试，qps可达5w+/s。
 - **易于部署** 采用c++开发，全静态编译，零依赖，直接二进制部署。
 
 # idgen的编译安装
@@ -55,7 +55,7 @@ node1/start.sh 1
 node2/start.sh 2
 node3/start.sh 3
 
-  ```
+```
 
 ## id生成器的使用
 
@@ -89,7 +89,33 @@ idgen]# redis-cli -h 127.0.0.1 -p 6003  incrby  id 5
 
 ```
 
-## 运行参数
+# 性能测试
+Intel(R) Core(TM) i5-3470 CPU @ 3.20GHz 4核6G内存
+
+```
+# redis-benchmark -n 100000 -h 127.0.0.1 -p 6001 -t incr
+
+====== INCR ======
+  100000 requests completed in 1.47 seconds
+  50 parallel clients
+  3 bytes payload
+  keep alive: 1
+
+94.31% <= 1 milliseconds
+99.91% <= 2 milliseconds
+100.00% <= 2 milliseconds
+67888.66 requests per second
+```
+
+# 支持的命令列表
+
+- `PING` 可以用作测试服务是否正常
+- `SET key value` 用于设置初始id的值
+- `GET key` 用于查看当前的id而不会增加id的值
+- `INCR key` 用于把`key`的值加一，返回的值是加一后的结果
+- `INCRBY key value`，用于把`key`加`value`的步长后返回，一般应用于批量申请id
+
+# 运行参数
 
 idgen运行需要设置运行参数，通过--help查看参数说明。其中需要配置id.conf,如下:
 
@@ -130,11 +156,3 @@ accesslog = log/access.log
 advanceStep = 10000
 
 ```
-
-# 支持的命令列表
-
-- `PING` 可以用作测试服务是否正常
-- `SET key value` 用于设置初始id的值
-- `GET key` 用于查看当前的id而不会增加id的值
-- `INCR key` 用于把`key`的值加一，返回的值是加一后的结果
-- `INCRBY key value`，用于把`key`加`value`的步长后返回，一般应用于批量申请id
