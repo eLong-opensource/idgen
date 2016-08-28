@@ -1,12 +1,13 @@
 # idgen介绍
 
-idgen是一个可以生成全局唯一自增id的分布式的高可用服务。
+idgen是一个可以生成全局唯一自增id的分布式高可用服务。
 
 # 特性
 
-- 分布式强一致
-- redis兼容协议
-- 高性能
+- *强一致* 使用raft一致性算法，多节点自动切换master-follower，任何一个节点都可以提供服务。
+- *接口简单* redis兼容协议，使用任何一门语言的redis客户端即可使用，没有专门的客户端。
+- *高性能* 使用redis-benchmark来测试，qps可达4w/s。
+- *易于部署* 采用c++开发，全静态编译，零依赖，直接二进制部署。
 
 # idgen的编译安装
 
@@ -64,7 +65,7 @@ idgen使用redis通信协议，运行后,可以使用redis客户端连接测试�
 
 //连接任意一个实例,发送ping,回复Pong,即该实例服务启动正常。
 idgen]# redis-cli -h 127.0.0.1 -p 6001 ping
-PONG 
+PONG
 
 //设置id初始值,回复OK，设置成功
 idgen]# redis-cli -h 127.0.0.1 -p 6001 set id 23
@@ -130,4 +131,10 @@ advanceStep = 10000
 
 ```
 
+# 支持的命令列表
 
+- `PING` 可以用作测试服务是否正常
+- `SET key value` 用于设置初始id的值
+- `GET key` 用于查看当前的id而不会增加id的值
+- `INCR key` 用于把`key`的值加一，返回的值是加一后的结果
+- `INCRBY key value`，用于把`key`加`value`的步长后返回，一般应用于批量申请id
